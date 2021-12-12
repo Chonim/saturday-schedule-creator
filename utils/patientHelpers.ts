@@ -17,6 +17,13 @@ export const parseList = (originalList: string) => {
   return finalPatientArray;
 };
 
+const checkIdentical = (patient: Patient, patienToCompare: Patient) => {
+  return (
+    patient.room === patienToCompare.room &&
+    patient.name === patienToCompare.name
+  );
+}
+
 export const mergeOldAndNewList = ({
   previousPatientList,
   newPatientList,
@@ -29,10 +36,7 @@ export const mergeOldAndNewList = ({
   const finalPatientList = previousPatientList;
   const checkAlreadyInList = (patientToCheck: Patient) =>
     previousPatientList.some((previousPatent: Patient) => {
-      return (
-        `${previousPatent.room}${previousPatent.name}` ===
-        `${patientToCheck.room}${patientToCheck.name}`
-      );
+      return checkIdentical(previousPatent, patientToCheck)
     });
   newPatientList.forEach((newPatient: Patient) => {
     const isAlreadyInList = checkAlreadyInList(newPatient);
@@ -43,8 +47,7 @@ export const mergeOldAndNewList = ({
   dischargedPatientList.forEach((dischargedPatient: Patient) => {
     const index = finalPatientList.findIndex(
       (patient) =>
-      patient.room === dischargedPatient.room &&
-      patient.name === dischargedPatient.name
+      checkIdentical(patient, dischargedPatient)
       );
     const isAlreadyInList = index > -1;
     if (isAlreadyInList) {
