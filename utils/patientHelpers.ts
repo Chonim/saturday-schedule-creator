@@ -45,10 +45,7 @@ export const mergeOldAndNewList = ({
     }
   });
   dischargedPatientList.forEach((dischargedPatient: Patient) => {
-    const index = finalPatientList.findIndex(
-      (patient) =>
-      checkIdentical(patient, dischargedPatient)
-      );
+    const index = finalPatientList.findIndex((patient) => checkIdentical(patient, dischargedPatient));
     const isAlreadyInList = index > -1;
     if (isAlreadyInList) {
       finalPatientList.splice(index, 1);
