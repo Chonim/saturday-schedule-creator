@@ -1,7 +1,7 @@
 export type Patient = {
   room: number;
   name: string;
-  isRefused?: boolean;
+  isRefusing?: boolean;
   isOs?: boolean;
   isSixth?: boolean;
   isFromLastweek?: boolean;

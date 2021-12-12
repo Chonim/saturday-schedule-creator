@@ -7,11 +7,11 @@ export const parseList = (originalList: string) => {
     .filter((patient) => patient.length > 1);
   const finalPatientArray = patientArray.map(([room, name]) => {
     const [nameString, additionalComment = false] = name.split(" ");
-    const isRefused = additionalComment === "당분간x";
+    const isRefusing = additionalComment === "당분간x";
     return {
       room: +room,
       name: nameString,
-      isRefused,
+      isRefusing,
     } as Patient;
   });
   return finalPatientArray;
@@ -51,17 +51,64 @@ export const mergeOldAndNewList = ({
       finalPatientList.splice(index, 1);
     }
   });
-  return sortPatientsByName(finalPatientList);
+  return sortPatientsByKey(finalPatientList, 'name');
 };
 
-export const sortPatientsByName = (patientList: Patient[]) => {
+export const sortPatientsByKey = (patientList: Patient[], key: keyof Patient) => {
   return patientList.sort((a: Patient, b: Patient) => {
-    if (a.name < b.name) {
+    if ((a[key] || "") < (b[key] || "")) {
       return -1;
     }
-    if (a.name > b.name) {
+    if ((a[key] || "") > (b[key] || "")) {
       return 1;
     }
     return 0;
   });
 }
+
+export const createPatientsInFirst = ({
+  allList,
+  sixthPatients,
+  osPatients,
+  patientsCameThistWeek,
+  refusingPatients,
+  startingPatient,
+}: {
+  allList: Patient[];
+  sixthPatients: Patient[];
+  osPatients: Patient[];
+  patientsCameThistWeek: Patient[];
+  refusingPatients: Patient[];
+  startingPatient: Patient;
+}) => {
+  let patientsInFirst = [
+    ...sixthPatients,
+    ...osPatients,
+    ...patientsCameThistWeek,
+  ];
+  const allListExceptRefusing = allList.filter(
+    (patient) => !patient.isRefusing
+  );
+  refusingPatients.forEach((refusingPatient) => {
+    const index = allListExceptRefusing.findIndex((patient) =>
+    checkIdentical(patient, refusingPatient)
+    );
+    if (index > -1) {
+      allListExceptRefusing.splice(index, 1);
+    }
+  });
+  const startingPatientIndex = allListExceptRefusing.findIndex((patient) =>
+    checkIdentical(patient, startingPatient)
+  );
+  const restLength = 41 - patientsInFirst.length
+  const endIndex = startingPatientIndex + restLength;
+  const indexEndFromStart = restLength - patientsInFirst.length;
+  let additionalPatients = allListExceptRefusing.slice(
+    startingPatientIndex,
+    endIndex
+  );
+  additionalPatients = [...additionalPatients, ...allListExceptRefusing.slice(0, indexEndFromStart)];
+  patientsInFirst = [...patientsInFirst, ...additionalPatients];
+  const sortedPatientsInFirst = sortPatientsByKey(patientsInFirst, "room");
+  return sortedPatientsInFirst;
+};
