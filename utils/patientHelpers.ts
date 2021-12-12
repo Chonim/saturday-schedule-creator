@@ -34,12 +34,12 @@ export const mergeOldAndNewList = ({
   dischargedPatientList: Patient[];
 }) => {
   const finalPatientList = previousPatientList;
-  const checkAlreadyInList = (patientToCheck: Patient) =>
-    previousPatientList.some((previousPatent: Patient) => {
-      return checkIdentical(previousPatent, patientToCheck)
-    });
   newPatientList.forEach((newPatient: Patient) => {
-    const isAlreadyInList = checkAlreadyInList(newPatient);
+    const isAlreadyInList = previousPatientList.some(
+      (previousPatent: Patient) => {
+        return checkIdentical(previousPatent, newPatient);
+      }
+    );
     if (!isAlreadyInList) {
       finalPatientList.push(newPatient);
     }
