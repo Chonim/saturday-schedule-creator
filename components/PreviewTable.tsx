@@ -3,27 +3,34 @@ import styled from "@emotion/styled";
 import { Patient } from '@type/patientTypes';
 
 type PreviewTableProps = {
-  patientList: Patient[]
+  patientList: Patient[] | string
 };
 
 const PreviewTable = ({ patientList }: PreviewTableProps) => {
+  const isFluList = typeof patientList === 'string'
   return (
     <PreviewTableWrapper>
       <table>
         <thead>
           <tr>
-            <th>병실</th>
+            {!isFluList && <th>병실</th>}
             <th>이름</th>
           </tr>
         </thead>
         <tbody>
-          {patientList?.map(({ room, name }, index) => (
-            <tr key={`${room}-${name}`}>
-              <td>{index + 1}</td>
-              <td>{room}</td>
-              <td>{name}</td>
+          {isFluList ? (
+            <tr>
+              <td>{patientList}</td>
             </tr>
-          ))}
+          ) : (
+            (patientList as Patient[])?.map(({ room, name }, index) => (
+              <tr key={`${room}-${name}`}>
+                <td>{index + 1}</td>
+                <td>{room}</td>
+                <td>{name}</td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </PreviewTableWrapper>

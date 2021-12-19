@@ -1,4 +1,4 @@
-import { Patient } from "../type/patientTypes";
+import { Patient, Patients } from "../type/patientTypes";
 
 export const parseList = (originalList: string) => {
   const patientList: string[] = originalList.split("\n");
@@ -18,11 +18,14 @@ export const parseList = (originalList: string) => {
 };
 
 const checkIdentical = (patient: Patient, patienToCompare: Patient) => {
+  if (!patient || !patienToCompare) {
+    return false;
+  }
   return (
     patient.room === patienToCompare.room &&
     patient.name === patienToCompare.name
   );
-}
+};
 
 export const mergeOldAndNewList = ({
   previousPatientList,
@@ -45,16 +48,21 @@ export const mergeOldAndNewList = ({
     }
   });
   dischargedPatientList.forEach((dischargedPatient: Patient) => {
-    const index = finalPatientList.findIndex((patient) => checkIdentical(patient, dischargedPatient));
+    const index = finalPatientList.findIndex((patient) =>
+      checkIdentical(patient, dischargedPatient)
+    );
     const isAlreadyInList = index > -1;
     if (isAlreadyInList) {
       finalPatientList.splice(index, 1);
     }
   });
-  return sortPatientsByKey(finalPatientList, 'name');
+  return sortPatientsByKey(finalPatientList, "name");
 };
 
-export const sortPatientsByKey = (patientList: Patient[], key: keyof Patient) => {
+export const sortPatientsByKey = (
+  patientList: Patient[],
+  key: keyof Patient
+) => {
   return patientList.sort((a: Patient, b: Patient) => {
     if ((a[key] || "") < (b[key] || "")) {
       return -1;
@@ -64,7 +72,7 @@ export const sortPatientsByKey = (patientList: Patient[], key: keyof Patient) =>
     }
     return 0;
   });
-}
+};
 
 export const createPatientsInFirst = ({
   allList,
@@ -87,11 +95,11 @@ export const createPatientsInFirst = ({
     ...patientsCameThistWeek,
   ];
   const allListExceptRefusing = allList.filter(
-    (patient) => !patient.isRefusing
+    (patient) => !patient?.isRefusing
   );
   refusingPatients.forEach((refusingPatient) => {
     const index = allListExceptRefusing.findIndex((patient) =>
-    checkIdentical(patient, refusingPatient)
+      checkIdentical(patient, refusingPatient)
     );
     if (index > -1) {
       allListExceptRefusing.splice(index, 1);
@@ -100,15 +108,44 @@ export const createPatientsInFirst = ({
   const startingPatientIndex = allListExceptRefusing.findIndex((patient) =>
     checkIdentical(patient, startingPatient)
   );
-  const restLength = 41 - patientsInFirst.length
+  const restLength = 40 - patientsInFirst.length;
   const endIndex = startingPatientIndex + restLength;
-  const indexEndFromStart = restLength - patientsInFirst.length;
+  let indexEndFromStart = restLength - patientsInFirst.length;
+  if (startingPatientIndex + restLength > allListExceptRefusing.length) {
+    indexEndFromStart =
+      startingPatientIndex + restLength - allListExceptRefusing.length;
+  }
   let additionalPatients = allListExceptRefusing.slice(
     startingPatientIndex,
     endIndex
   );
-  additionalPatients = [...additionalPatients, ...allListExceptRefusing.slice(0, indexEndFromStart)];
+  additionalPatients = [
+    ...additionalPatients,
+    ...allListExceptRefusing.slice(0, indexEndFromStart),
+  ];
   patientsInFirst = [...patientsInFirst, ...additionalPatients];
   const sortedPatientsInFirst = sortPatientsByKey(patientsInFirst, "room");
-  return sortedPatientsInFirst;
+  return {
+    patientsInFirst: sortedPatientsInFirst,
+    indexEndFromStart,
+  };
+};
+
+export const getFluList = ({
+  fluPatients,
+  startName,
+}: {
+  fluPatients: string;
+  startName: string;
+}) => {
+  const parsedFluList = fluPatients.split(" ");
+  const startingPatientIndex = parsedFluList.indexOf(startName);
+  const finalPatientIndex = startingPatientIndex + 7;
+  let finalList = parsedFluList.slice(startingPatientIndex, finalPatientIndex);
+  const fluFromStart =
+    startingPatientIndex + 7 > parsedFluList.length
+      ? parsedFluList.slice(0, 7 - finalList.length)
+      : [];
+  finalList = [...finalList, ...fluFromStart];
+  return finalList.join(' ');
 };

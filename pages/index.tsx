@@ -5,6 +5,7 @@ import {
   mergeOldAndNewList,
   parseList,
   createPatientsInFirst,
+  getFluList,
 } from "@utils/patientHelpers";
 import { Patient } from '@type/patientTypes';
 import PreviewTable from '@components/PreviewTable'
@@ -22,8 +23,16 @@ const Home: NextPage = () => {
   const refusingPatientsInput = useRef<HTMLTextAreaElement>(null);
   const startingPatientInput = useRef<HTMLTextAreaElement>(null);
   
+  const fluPatientsInput = useRef<HTMLTextAreaElement>(null);
+  const startingFluPatientInput = useRef<HTMLTextAreaElement>(null);
+
+  const secondPatientsInput = useRef<HTMLTextAreaElement>(null);
+  
   const [mergedPatientList, setMergedPatientList] = useState<Patient[]>([])
   const [patientsInFirstList, setPatientsInFirstList] = useState<Patient[]>([]);
+  const [finalFluList, setFinalFluList] = useState<string>('');
+
+  const [startIndexInSecond, setStartIndexInSecond] = useState<number>();
 
   // FIXME: remove it
   const handlePreviousPatientsInputChange = (target: HTMLTextAreaElement) => {
@@ -61,7 +70,13 @@ const Home: NextPage = () => {
     const parsedStartingPatientInput = parseList(
       startingPatientInput?.current?.value || ""
     )[0];
-    const patientsInFirst = createPatientsInFirst({
+    const {
+      patientsInFirst,
+      indexEndFromStart,
+    }: {
+      patientsInFirst: Patient[];
+      indexEndFromStart: number;
+    } = createPatientsInFirst({
       allList: mergedPatientList,
       sixthPatients: parsedSixthPatients,
       osPatients: parsedOsPatients,
@@ -71,6 +86,18 @@ const Home: NextPage = () => {
     });
 
     setPatientsInFirstList(patientsInFirst);
+    setStartIndexInSecond(indexEndFromStart);
+  }
+
+  const createFluList = () => {
+    const fluPatients = fluPatientsInput?.current?.value || ""
+    const startName = startingFluPatientInput?.current?.value || "";
+    const finalList = getFluList({
+      fluPatients,
+      startName,
+    });
+    console.log(finalList);
+    setFinalFluList(finalList);
   }
 
   return (
@@ -136,6 +163,47 @@ const Home: NextPage = () => {
             <p>잔여 시작환자</p>
             {/* 505 한성진 */}
             <textarea rows={ROWS} ref={startingPatientInput} />
+          </div>
+
+          <div>
+            <PreviewTable patientList={patientsInFirstList} />
+          </div>
+        </div>
+        <button onClick={createFirstList}>생성하기</button>
+      </section>
+
+      {/* flu list */}
+      <section>
+        <h2>유속</h2>
+        <div>
+          <div>
+            <p>유속 환자 리스트</p>
+            <textarea rows={ROWS} ref={fluPatientsInput} />
+          </div>
+
+          <div>
+            <p>시작 환자</p>
+            <textarea rows={ROWS} ref={startingFluPatientInput} />
+          </div>
+
+          <div>
+            <PreviewTable patientList={finalFluList} />
+          </div>
+        </div>
+        <button
+          onClick={createFluList}
+        >
+          생성하기
+        </button>
+      </section>
+
+      {/* second */}
+      <section>
+        <h2>2번 스케줄</h2>
+        <div>
+          <div>
+            <p>2번 환자들</p>
+            <textarea rows={ROWS} ref={secondPatientsInput} />
           </div>
 
           <div>
