@@ -10,6 +10,7 @@ import {
 } from "@utils/patientHelpers";
 import { Patient } from '@type/patientTypes';
 import PreviewTable from '@components/PreviewTable'
+import copy from "copy-to-clipboard";
 
 const ROWS = 50
 
@@ -35,7 +36,6 @@ const Home: NextPage = () => {
   
   const [finalFluList, setFinalFluList] = useState<string>('');
   
-  const [lastPatientFromFirst, setLastPatientFromFirst] = useState<Patient>()
   const [startIndexInSecond, setStartIndexInSecond] = useState<number>(0);
   const [secondPatientsList, setSecondPatientsList] = useState<Patient[]>([])
 
@@ -46,6 +46,21 @@ const Home: NextPage = () => {
     console.log(value);
     console.log(parseList(value));
   };
+
+  const copyToClipboard = (text: string) => {
+    copy(text, {
+      format: "text/plain",
+    });
+    alert('복사되었습니다.')
+  }
+
+  const createResultStringFromArray = (patients: Patient[]) => {
+    let resultString = "";
+    patients.forEach(({ room, name, isRefusing }) => {
+      resultString += `${room}\t${name}${isRefusing ? ` 당분간x` : ''}\n`;
+    });
+    copyToClipboard(resultString);
+  }
 
   const createPatientList = () => {
     const previousPatientList = parseList(previousPatientsInput?.current?.value || '');
@@ -160,6 +175,9 @@ const Home: NextPage = () => {
           </div>
         </div>
         <button onClick={createPatientList}>생성하기</button>
+        <button onClick={() => createResultStringFromArray(mergedPatientList)}>
+          복사하기
+        </button>
       </section>
 
       {/* first */}
@@ -197,6 +215,11 @@ const Home: NextPage = () => {
           </div>
         </div>
         <button onClick={createFirstList}>생성하기</button>
+        <button
+          onClick={() => createResultStringFromArray(patientsInFirstList)}
+        >
+          복사하기
+        </button>
       </section>
 
       {/* flu list */}
@@ -217,11 +240,8 @@ const Home: NextPage = () => {
             <PreviewTable patientList={finalFluList} />
           </div>
         </div>
-        <button
-          onClick={createFluList}
-        >
-          생성하기
-        </button>
+        <button onClick={createFluList}>생성하기</button>
+        <button onClick={() => copyToClipboard(finalFluList)}>복사하기</button>
       </section>
 
       {/* second */}
@@ -238,6 +258,9 @@ const Home: NextPage = () => {
           </div>
         </div>
         <button onClick={createSecondList}>생성하기</button>
+        <button onClick={() => createResultStringFromArray(secondPatientsList)}>
+          복사하기
+        </button>
       </section>
     </InputsContainer>
   );
