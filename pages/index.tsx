@@ -6,6 +6,7 @@ import {
   parseList,
   createPatientsInFirst,
   getFluList,
+  sortPatientsByKey,
 } from "@utils/patientHelpers";
 import { Patient } from '@type/patientTypes';
 import PreviewTable from '@components/PreviewTable'
@@ -30,9 +31,13 @@ const Home: NextPage = () => {
   
   const [mergedPatientList, setMergedPatientList] = useState<Patient[]>([])
   const [patientsInFirstList, setPatientsInFirstList] = useState<Patient[]>([]);
+  const [allListExceptRefusing, setAllListExceptRefusing] = useState<Patient[]>([]);
+  
   const [finalFluList, setFinalFluList] = useState<string>('');
-
-  const [startIndexInSecond, setStartIndexInSecond] = useState<number>();
+  
+  const [lastPatientFromFirst, setLastPatientFromFirst] = useState<Patient>()
+  const [startIndexInSecond, setStartIndexInSecond] = useState<number>(0);
+  const [secondPatientsList, setSecondPatientsList] = useState<Patient[]>([])
 
   // FIXME: remove it
   const handlePreviousPatientsInputChange = (target: HTMLTextAreaElement) => {
@@ -72,10 +77,12 @@ const Home: NextPage = () => {
     )[0];
     const {
       patientsInFirst,
-      indexEndFromStart,
+      allListExceptRefusing,
+      startingPatientIndexInSecond,
     }: {
       patientsInFirst: Patient[];
-      indexEndFromStart: number;
+      allListExceptRefusing: Patient[];
+      startingPatientIndexInSecond: number;
     } = createPatientsInFirst({
       allList: mergedPatientList,
       sixthPatients: parsedSixthPatients,
@@ -86,7 +93,8 @@ const Home: NextPage = () => {
     });
 
     setPatientsInFirstList(patientsInFirst);
-    setStartIndexInSecond(indexEndFromStart);
+    setAllListExceptRefusing(allListExceptRefusing);
+    setStartIndexInSecond(startingPatientIndexInSecond);
   }
 
   const createFluList = () => {
@@ -98,6 +106,25 @@ const Home: NextPage = () => {
     });
     console.log(finalList);
     setFinalFluList(finalList);
+  }
+
+  const createSecondList = () => {
+    const parsedSecondPatientsList = parseList(
+      secondPatientsInput?.current?.value || ""
+    );
+    let index = startIndexInSecond
+    while (parsedSecondPatientsList.length < 25) {
+      if (index > allListExceptRefusing.length) {
+        index = 0
+      }
+      parsedSecondPatientsList.push(allListExceptRefusing[index])
+      index++
+    }
+    const sortedSecondPatientsList = sortPatientsByKey(
+      parsedSecondPatientsList,
+      "room"
+    );
+    setSecondPatientsList(sortedSecondPatientsList);
   }
 
   return (
@@ -207,10 +234,10 @@ const Home: NextPage = () => {
           </div>
 
           <div>
-            <PreviewTable patientList={patientsInFirstList} />
+            <PreviewTable patientList={secondPatientsList} />
           </div>
         </div>
-        <button onClick={createFirstList}>생성하기</button>
+        <button onClick={createSecondList}>생성하기</button>
       </section>
     </InputsContainer>
   );

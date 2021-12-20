@@ -4,7 +4,7 @@ export const parseList = (originalList: string) => {
   const patientList: string[] = originalList.split("\n");
   const patientArray = patientList
     .map((patient: string) => patient.split("\t"))
-    .filter((patient) => patient.length > 1);
+    .filter(([room, name]) => room && name);
   const finalPatientArray = patientArray.map(([room, name]) => {
     const [nameString, additionalComment = false] = name.split(" ");
     const isRefusing = additionalComment === "당분간x";
@@ -125,9 +125,15 @@ export const createPatientsInFirst = ({
   ];
   patientsInFirst = [...patientsInFirst, ...additionalPatients];
   const sortedPatientsInFirst = sortPatientsByKey(patientsInFirst, "room");
+  const lastPatient = additionalPatients[additionalPatients.length - 1];
+  const lastPatientIndex = allListExceptRefusing.findIndex((patient: Patient) => {
+    return checkIdentical(patient, lastPatient);
+  })
+  const startingPatientIndexInSecond = lastPatientIndex + 1;
   return {
     patientsInFirst: sortedPatientsInFirst,
-    indexEndFromStart,
+    allListExceptRefusing,
+    startingPatientIndexInSecond,
   };
 };
 
