@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "next dev",
     "test": "jest --detectOpenHandles --forceExit",
-    "build": "next build",
+    "build": "next build && next export",
+    "deploy": "yarn build && firebase deploy",
     "start": "next start",
     "lint": "next lint"
   },
